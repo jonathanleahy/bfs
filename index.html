@@ -52,6 +52,9 @@
         <input type="number" id="num-stops" min="1" max="20" value="5">
         <button id="zoom-in">Zoom In</button>
         <button id="zoom-out">Zoom Out</button>
+        <label for="force-directed">
+            <input type="checkbox" id="force-directed"> Use Force-Directed Layout
+        </label>
     </div>
     <svg id="network-svg" width="1200" height="800"></svg>
     <div id="journey-info"></div>
@@ -236,7 +239,11 @@
                     if (!nodes.some(n => n.id === neighbor)) {
                         nodes.push({ id: neighbor, line: line });
                     }
-                    links.push({ source: station, target: neighbor, line: line });
+                    links.push({
+                        source: nodes.find(n => n.id === station),
+                        target: nodes.find(n => n.id === neighbor),
+                        line: line
+                    });
                     combinedNetwork[station].add(neighbor);
                     if (!combinedNetwork[neighbor]) {
                         combinedNetwork[neighbor] = new Set();
@@ -247,192 +254,218 @@
         });
 
         const stationPositions = {
-            "Baker Street": { x: 400, y: 300 },
-            "Oxford Circus": { x: 450, y: 350 },
-            "Piccadilly Circus": { x: 450, y: 400 },
-            "Green Park": { x: 400, y: 400 },
-            "Westminster": { x: 500, y: 450 },
-            "Waterloo": { x: 550, y: 500 },
-            "Elephant & Castle": { x: 600, y: 600 },
-            "Lambeth North": { x: 575, y: 550 },
-            "Embankment": { x: 500, y: 475 },
-            "Charing Cross": { x: 475, y: 425 },
-            "Regent's Park": { x: 425, y: 275 },
-            "Marylebone": { x: 375, y: 275 },
-            "Edgware Road": { x: 350, y: 250 },
-            "Paddington": { x: 300, y: 250 },
-            "Warwick Avenue": { x: 250, y: 225 },
-            "Notting Hill Gate": { x: 250, y: 350 },
-            "Holland Park": { x: 225, y: 325 },  // Add Holland Park
-            "Queensway": { x: 275, y: 325 },
-            "Lancaster Gate": { x: 300, y: 300 },
-            "Marble Arch": { x: 350, y: 350 },
-            "Bond Street": { x: 400, y: 350 },
-            "Tottenham Court Road": { x: 500, y: 350 },
-            "Holborn": { x: 550, y: 350 },
-            "Chancery Lane": { x: 600, y: 350 },
-            "St. Paul's": { x: 650, y: 350 },
-            "Bank": { x: 700, y: 350 },
-            "Bayswater": { x: 275, y: 300 },
-            "High Street Kensington": { x: 250, y: 400 },
-            "Gloucester Road": { x: 300, y: 450 },
-            "South Kensington": { x: 350, y: 450 },
-            "Sloane Square": { x: 400, y: 500 },
-            "Victoria": { x: 450, y: 500 },
-            "St. James's Park": { x: 475, y: 475 },
-            "Temple": { x: 550, y: 450 },
-            "Blackfriars": { x: 600, y: 425 },
-            "Mansion House": { x: 650, y: 400 },
-            "Cannon Street": { x: 675, y: 375 },
-            "Monument": { x: 700, y: 375 },
-            "Tower Hill": { x: 750, y: 375 },
-            "Aldgate": { x: 775, y: 350 },
-            "Liverpool Street": { x: 750, y: 300 },
-            "Moorgate": { x: 700, y: 275 },
-            "Barbican": { x: 650, y: 250 },
-            "Farringdon": { x: 600, y: 225 },
-            "King's Cross St. Pancras": { x: 550, y: 200 },
-            "Euston Square": { x: 500, y: 225 },
-            "Great Portland Street": { x: 450, y: 250 },
-            "Earl's Court": { x: 250, y: 500 },
-            "Aldgate East": { x: 800, y: 375 },
-            "Southwark": { x: 600, y: 525 },
-            "London Bridge": { x: 650, y: 500 },
-            "Bermondsey": { x: 700, y: 475 },
-            "Finchley Road": { x: 300, y: 200 },
-            "Battersea Power Station": { x: 400, y: 600 },
-            "Nine Elms": { x: 450, y: 575 },
-            "Kennington": { x: 500, y: 550 },
-            "Leicester Square": { x: 475, y: 375 },
-            "Goodge Street": { x: 500, y: 325 },
-            "Warren Street": { x: 500, y: 275 },
-            "Euston": { x: 525, y: 250 },
-            "Angel": { x: 600, y: 175 },
-            "Knightsbridge": { x: 350, y: 425 },
-            "Hyde Park Corner": { x: 375, y: 425 },
-            "Covent Garden": { x: 525, y: 375 },
-            "Russell Square": { x: 575, y: 300 },
-            "Brixton": { x: 500, y: 650 },
-            "Stockwell": { x: 500, y: 600 },
-            "Vauxhall": { x: 475, y: 550 },
-            "Pimlico": { x: 475, y: 525 },
-            "Highbury & Islington": { x: 600, y: 150 },
-            "Finsbury Park": { x: 625, y: 125 },
-            "Old Street": { x: 675, y: 275 }  // Add this line
-        };
+    "Aldgate": { x: -0.07521, y: 51.51439 },
+    "Aldgate East": { x: -0.07223, y: 51.51538 },
+    "Aldwych": { x: -0.11592, y: 51.51203 },
+    "Angel": { x: -0.10583, y: 51.53265 },
+    "Archway": { x: -0.13492, y: 51.56551 },
+    "Arsenal": { x: -0.10589, y: 51.55859 },
+    "Baker Street": { x: -0.15743, y: 51.5226 },
+    "Balham": { x: -0.15372, y: 51.44371 },
+    "Bank": { x: -0.08886, y: 51.51353 },
+    "Barbican": { x: -0.09784, y: 51.52037 },
+    "Barons Court": { x: -0.21366, y: 51.49042 },
+    "Battersea Power Station": { x: -0.19561, y: 51.49049 },
+    "Bayswater": { x: -0.18797, y: 51.51257 },
+    "Belsize Park": { x: -0.16421, y: 51.55037 },
+    "Bermondsey": { x: -0.06411, y: 51.49798 },
+    "Bethnal Green": { x: -0.0551, y: 51.52723 },
+    "Blackfriars": { x: -0.10362, y: 51.51167 },
+    "Bond Street": { x: -0.14961, y: 51.51414 },
+    "Borough": { x: -0.09402, y: 51.50098 },
+    "Bow Rd": { x: -0.0253, y: 51.52699 },
+    "Bromley-By-Bow": { x: -0.01165, y: 51.52478 },
+    "Brixton": { x: -0.12080, y: 51.46625 },
+    "Caledonian Rd": { x: -0.11861, y: 51.54884 },
+    "Camden Town": { x: -0.14267, y: 51.53932 },
+    "Canada Water": { x: -0.04975, y: 51.49793 },
+    "Cannon Street": { x: -0.04975, y: 51.49794 },
+    "Chalk Farm": { x: -0.15384, y: 51.54411 },
+    "Chancery Lane": { x: -0.11165, y: 51.51832 },
+    "Charing Cross": { x: -0.12484, y: 51.50859 },
+    "Clapham Common": { x: -0.13886, y: 51.4616 },
+    "Clapham North": { x: -0.12968, y: 51.465 },
+    "Clapham South": { x: -0.14796, y: 51.45281 },
+    "Covent Garden": { x: -0.12439, y: 51.51283 },
+    "Dollis Hill": { x: -0.23854, y: 51.55238 },
+    "Earl's Court": { x: -0.19346, y: 51.49204 },
+    "East Acton": { x: -0.24749, y: 51.51685 },
+    "East Putney": { x: -0.21097, y: 51.45882 },
+    "Edgware Road": { x: -0.16773, y: 51.51997 },
+    "Elephant & Castle": { x: -0.10053, y: 51.49589 },
+    "Embankment": { x: -0.12252, y: 51.50692 },
+    "Euston": { x: -0.13202, y: 51.52811 },
+    "Euston Square": { x: -0.13546, y: 51.52547 },
+    "Farringdon": { x: -0.10489, y: 51.52021 },
+    "Finchley Road": { x: -0.1804, y: 51.54712 },
+    "Finsbury Park": { x: -0.10673, y: 51.56553 },
+    "Fulham Broadway": { x: -0.19486, y: 51.48022 },
+    "Gloucester Road": { x: -0.18319, y: 51.4948 },
+    "Goldhawk Rd": { x: -0.22682, y: 51.5022 },
+    "Goodge Street": { x: -0.13455, y: 51.52041 },
+    "Great Portland Street": { x: -0.14393, y: 51.52382 },
+    "Green Park": { x: -0.14194, y: 51.507 },
+    "Hammersmith": { x: -0.22486, y: 51.49355 },
+    "Hampstead": { x: -0.17828, y: 51.55669 },
+    "Harlesdon": { x: -0.2577, y: 51.53571 },
+    "High Street Kensington": { x: -0.19234, y: 51.50103 },
+    "Highbury & Islington": { x: -0.10346, y: 51.54607 },
+    "Holborn": { x: -0.11997, y: 51.51744 },
+    "Holland Park": { x: -0.20621, y: 51.50718 },
+    "Holloway Rd": { x: -0.11325, y: 51.55274 },
+    "Hyde Park Corner": { x: -0.15369, y: 51.50241 },
+    "Kennington": { x: -0.10533, y: 51.48835 },
+    "Kensal Green": { x: -0.22428, y: 51.53052 },
+    "Kensington": { x: -0.2102, y: 51.49774 },
+    "Kentish Town": { x: -0.14036, y: 51.55042 },
+    "Kilburn": { x: -0.20443, y: 51.54701 },
+    "Kilburn Park": { x: -0.1939, y: 51.53557 },
+    "King's Cross St. Pancras": { x: -0.12361, y: 51.53063 },
+    "Knightsbridge": { x: -0.16055, y: 51.50148 },
+    "Ladbroke Grove": { x: -0.21039, y: 51.51737 },
+    "Lambeth North": { x: -0.11176, y: 51.49896 },
+    "Lancaster Gate": { x: -0.17556, y: 51.5119 },
+    "Latimer Rd": { x: -0.21818, y: 51.51333 },
+    "Leicester Square": { x: -0.12797, y: 51.51121 },
+    "Liverpool Street": { x: -0.08225, y: 51.51756 },
+    "London Bridge": { x: -0.08753, y: 51.50538 },
+    "Mansion House": { x: -0.09464, y: 51.51238 },
+    "Marble Arch": { x: -0.15825, y: 51.51375 },
+    "Marylebone": { x: -0.16316, y: 51.52244 },
+    "Mile End": { x: -0.03425, y: 51.52493 },
+    "Monument": { x: -0.08654, y: 51.51113 },
+    "Moorgate": { x: -0.08915, y: 51.51816 },
+    "Mornington Crescent": { x: -0.13875, y: 51.53435 },
+    "Neasden": { x: -0.24979, y: 51.55389 },
+    "New Cross": { x: -0.03227, y: 51.47609 },
+    "New Cross Gate": { x: -0.03999, y: 51.47573 },
+    "Nine Elms": { x: 0.00467, y: 51.49785 },
+    "North Greenwich": { x: 0.00467, y: 51.49784 },
+    "Notting Hill Gate": { x: 0.00467, y: 51.49785 },
+    "Old Street": { x: -0.08753, y: 51.5257 },
+    "Oval": { x: -0.11305, y: 51.48185 },
+    "Oxford Circus": { x: -0.1415, y: 51.51513 },
+    "Paddington": { x: -0.1756, y: 51.51588 },
+    "Parsons Green": { x: -0.20107, y: 51.47532 },
+    "Piccadilly Circus": { x: -0.13413, y: 51.50951 },
+    "Pimlico": { x: -0.13343, y: 51.48924 },
+    "Putney Bridge": { x: -0.20884, y: 51.46834 },
+    "Queens Park": { x: -0.20466, y: 51.53385 },
+    "Queensway": { x: -0.18758, y: 51.51056 },
+    "Ravenscourt Park": { x: -0.23607, y: 51.49423 },
+    "Regent's Park": { x: -0.14687, y: 51.52342 },
+    "Rotherhithe": { x: -0.05225, y: 51.50085 },
+    "Royal Oak": { x: -0.18849, y: 51.51937 },
+    "Russell Square": { x: -0.12454, y: 51.52298 },
+    "Shadwell": { x: -0.05706, y: 51.51174 },
+    "Shepherd's Bush": { x: -0.22644, y: 51.50566 },
+    "Shoreditch": { x: -0.07103, y: 51.52289 },
+    "Sloane Square": { x: -0.15629, y: 51.49234 },
+    "South Kensington": { x: -0.17367, y: 51.49418 },
+    "Southfields": { x: -0.20623, y: 51.44563 },
+    "Southwark": { x: -0.10623, y: 51.50564 },
+    "St. James's Park": { x: -0.13353, y: 51.49957 },
+    "St John's Wood": { x: -0.17439, y: 51.53482 },
+    "St Pancras": { x: -0.12496, y: 51.53051 },
+    "St. Paul's": { x: -0.09723, y: 51.51464 },
+    "Stamford Brook": { x: -0.24547, y: 51.4952 },
+    "Stepney Green": { x: -0.04691, y: 51.52201 },
+    "Stockwell": { x: -0.12305, y: 51.47234 },
+    "Stratford": { x: -0.00201, y: 51.54166 },
+    "Surrey Quays": { x: -0.04763, y: 51.49319 },
+    "Swiss Cottage": { x: -0.17549, y: 51.54346 },
+    "Temple": { x: -0.11357, y: 51.51112 },
+    "Tottenham Court Road": { x: -0.1308, y: 51.51616 },
+    "Tower Hill": { x: -0.07574, y: 51.51016 },
+    "Tufnell Park": { x: -0.13782, y: 51.55674 },
+    "Turnham Green": { x: -0.25499, y: 51.49501 },
+    "Vauxhall": { x: -0.125, y: 51.486 },
+    "Victoria": { x: -0.14453, y: 51.49649 },
+    "Wapping": { x: -0.05562, y: 51.50442 },
+    "Warren Street": { x: -0.13801, y: 51.52428 },
+    "Warwick Avenue": { x: -0.18345, y: 51.5235 },
+    "Waterloo": { x: -0.11466, y: 51.50401 },
+    "West Brompton": { x: -0.19591, y: 51.48712 },
+    "West Ham": { x: 0.00525, y: 51.52841 },
+    "West Hampstead": { x: -0.1906, y: 51.54663 },
+    "West Kensington": { x: -0.20625, y: 51.49066 },
+    "Westbourne Park": { x: -0.2012, y: 51.52127 },
+    "Westminster": { x: -0.12477, y: 51.50128 },
+    "White City": { x: -0.22447, y: 51.51232 },
+    "Whitechapel": { x: -0.06087, y: 51.5192 },
+    "Willesden Green": { x: -0.22127, y: 51.54915 },
+    "Willesden Junction": { x: -0.24493, y: 51.53231 }    
+};
 
-        // Modify the nodes array to include these fixed positions
+        console.log("Station Positions:", stationPositions);
+        console.log("Nodes before processing:", nodes);
+
+        // Modify the nodes array to include these projected positions
         nodes.forEach(node => {
             if (stationPositions[node.id]) {
-                node.fx = stationPositions[node.id].x;
-                node.fy = stationPositions[node.id].y;
+                const projected = projectCoordinates(stationPositions[node.id].x, stationPositions[node.id].y);
+                node.x = projected.x;
+                node.y = projected.y;
             } else {
-                // For nodes without defined positions, set initial position but allow movement
+                console.warn(`Missing position for station: ${node.id}`);
                 node.x = width / 2 + (Math.random() - 0.5) * 100;
                 node.y = height / 2 + (Math.random() - 0.5) * 100;
             }
         });
 
-        // Add this after the nodes forEach loop
+        console.log("Nodes after processing:", nodes);
+
+        // Update the projectCoordinates function
+        function projectCoordinates(lon, lat) {
+            // Define the bounds of your map
+            const lonRange = [-0.4, 0.2]; // Approximate longitude range for London
+            const latRange = [51.4, 51.7]; // Approximate latitude range for London
+
+            // Calculate the scale factors
+            const xScale = width / (lonRange[1] - lonRange[0]);
+            const yScale = height / (latRange[1] - latRange[0]); // Note: not inverted anymore
+
+            // Convert lon/lat to x/y
+            const x = (lon - lonRange[0]) * xScale;
+            const y = height - (lat - latRange[0]) * yScale; // Invert y-axis for SVG coordinate system
+
+            return { x, y };
+        }
+
+        // After processing the nodes, add this code to center and scale the map
+        let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
         nodes.forEach(node => {
-            if (!stationPositions[node.id]) {
-                console.warn(`Missing position for station: ${node.id}`);
-            }
+            minX = Math.min(minX, node.x);
+            maxX = Math.max(maxX, node.x);
+            minY = Math.min(minY, node.y);
+            maxY = Math.max(maxY, node.y);
         });
 
-        // Add zoom functionality
-        const zoom = d3.zoom()
-            .scaleExtent([0.5, 4])
-            .on("zoom", (event) => {
-                g.attr("transform", event.transform);
-            });
-
-        svg.call(zoom);
-
-        // Function to calculate the bounding box of all stations
-        function calculateBoundingBox(stations) {
-            let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-            Object.values(stations).forEach(station => {
-                minX = Math.min(minX, station.x);
-                minY = Math.min(minY, station.y);
-                maxX = Math.max(maxX, station.x);
-                maxY = Math.max(maxY, station.y);
-            });
-            return { minX, minY, maxX, maxY };
-        }
-
-        // Calculate the bounding box
-        const bbox = calculateBoundingBox(stationPositions);
-
-        // Calculate the scale to fit the network in the SVG
+        const padding = 20; // Padding around the map
         const scale = Math.min(
-            width / (bbox.maxX - bbox.minX),
-            height / (bbox.maxY - bbox.minY)
-        ) * 0.9; // 0.9 to add some padding
+            (width - 2 * padding) / (maxX - minX),
+            (height - 2 * padding) / (maxY - minY)
+        );
 
-        // Calculate the transform to center the network
-        const translateX = (width - scale * (bbox.maxX + bbox.minX)) / 2;
-        const translateY = (height - scale * (bbox.maxY + bbox.minY)) / 2;
+        nodes.forEach(node => {
+            node.x = (node.x - minX) * scale + padding;
+            node.y = (node.y - minY) * scale + padding;
+        });
 
-        // Set initial zoom level
-        const initialTransform = d3.zoomIdentity
-            .translate(translateX, translateY)
-            .scale(scale);
+        // Before creating the SVG elements
+        console.log("SVG dimensions:", width, height);
 
-        svg.call(zoom.transform, initialTransform);
+        let simulation;
 
-        // Function to handle zooming
-        function handleZoom(direction) {
-            const currentTransform = d3.zoomTransform(svg.node());
-            const scale = direction === 'in' ? currentTransform.k * 1.2 : currentTransform.k / 1.2;
-            const newTransform = d3.zoomIdentity
-                .translate(currentTransform.x, currentTransform.y)
-                .scale(scale);
-            svg.transition().duration(300).call(zoom.transform, newTransform);
+        function createForceSimulation() {
+            simulation = d3.forceSimulation(nodes)
+                .force("link", d3.forceLink(links).id(d => d.id).distance(30))
+                .force("charge", d3.forceManyBody().strength(-50))
+                .force("center", d3.forceCenter(width / 2, height / 2))
+                .on("tick", ticked);
         }
 
-        // Add event listeners for zoom buttons
-        document.getElementById('zoom-in').addEventListener('click', () => handleZoom('in'));
-        document.getElementById('zoom-out').addEventListener('click', () => handleZoom('out'));
-
-        // Create a force simulation
-        const simulation = d3.forceSimulation(nodes)
-            .force("link", d3.forceLink(links).id(d => d.id).distance(30))
-            .force("charge", d3.forceManyBody().strength(-50))
-            .force("center", d3.forceCenter(width / 2, height / 2))
-            .force("collision", d3.forceCollide().radius(10));
-
-        // Create the links
-        const link = g.append("g")
-            .selectAll("line")
-            .data(links)
-            .join("line")
-            .attr("class", "link")
-            .attr("stroke", d => lineColors[d.line]);
-
-        // Create the nodes
-        const node = g.append("g")
-            .selectAll("circle")
-            .data(nodes)
-            .join("circle")
-            .attr("class", "node")
-            .attr("r", 4)
-            .attr("fill", "white")
-            .attr("stroke", d => lineColors[d.line])
-            .attr("stroke-width", 2);
-
-        // Add station labels
-        const label = g.append("g")
-            .selectAll("text")
-            .data(nodes)
-            .join("text")
-            .attr("class", "station-label")
-            .text(d => d.id)
-            .attr("text-anchor", "middle")
-            .attr("dy", -6);
-
-        // Update positions on each tick of the simulation
-        simulation.on("tick", () => {
+        function ticked() {
             link
                 .attr("x1", d => d.source.x)
                 .attr("y1", d => d.source.y)
@@ -446,32 +479,86 @@
             label
                 .attr("x", d => d.x)
                 .attr("y", d => d.y);
+        }
+
+        function updateLayout() {
+            const useForceDirected = document.getElementById("force-directed").checked;
+
+            if (useForceDirected) {
+                if (!simulation) {
+                    createForceSimulation();
+                }
+                simulation.alpha(1).restart();
+            } else {
+                if (simulation) {
+                    simulation.stop();
+                }
+                // Reset to fixed positions
+                nodes.forEach(node => {
+                    node.x = node.fixedX;
+                    node.y = node.fixedY;
+                });
+                ticked();
+            }
+        }
+
+        // Store fixed positions
+        nodes.forEach(node => {
+            node.fixedX = node.x;
+            node.fixedY = node.y;
         });
 
-        // Drag functionality
-        function drag(simulation) {
-            function dragstarted(event) {
-                if (!event.active) simulation.alphaTarget(0.3).restart();
-                event.subject.fx = event.subject.x;
-                event.subject.fy = event.subject.y;
-            }
+        // Create elements (as before)
+        const link = g.append("g")
+            .selectAll("line")
+            .data(links)
+            .join("line")
+            .attr("class", "link")
+            .attr("stroke", d => lineColors[d.line])
+            .attr("stroke-width", 2);
 
-            function dragged(event) {
-                event.subject.fx = event.x;
-                event.subject.fy = event.y;
-            }
+        const node = g.append("g")
+            .selectAll("circle")
+            .data(nodes)
+            .join("circle")
+            .attr("class", "node")
+            .attr("r", 4)
+            .attr("fill", "white")
+            .attr("stroke", d => lineColors[d.line])
+            .attr("stroke-width", 2);
 
-            function dragended(event) {
-                if (!event.active) simulation.alphaTarget(0);
-                event.subject.fx = null;
-                event.subject.fy = null;
-            }
+        const label = g.append("g")
+            .selectAll("text")
+            .data(nodes)
+            .join("text")
+            .attr("class", "station-label")
+            .text(d => d.id)
+            .attr("text-anchor", "middle")
+            .attr("font-size", "8px");
 
-            return d3.drag()
-                .on("start", dragstarted)
-                .on("drag", dragged)
-                .on("end", dragended);
-        }
+        // Initial layout update
+        updateLayout();
+
+        // Add event listener for checkbox
+        document.getElementById("force-directed").addEventListener("change", updateLayout);
+
+        // Add zoom functionality
+        const zoom = d3.zoom()
+            .scaleExtent([0.5, 5])
+            .on("zoom", (event) => {
+                g.attr("transform", event.transform);
+            });
+
+        svg.call(zoom);
+
+        // Add zoom buttons functionality
+        document.getElementById("zoom-in").addEventListener("click", () => {
+            svg.transition().call(zoom.scaleBy, 1.5);
+        });
+
+        document.getElementById("zoom-out").addEventListener("click", () => {
+            svg.transition().call(zoom.scaleBy, 0.75);
+        });
 
         let selectedStation = null;
 
@@ -518,21 +605,19 @@
             const numStops = parseInt(document.getElementById("num-stops").value);
             const reachableStations = bfs(selectedStation, numStops);
 
-            // Reset previous highlighting and set all lines to be slightly transparent
+            // Reset previous highlighting
             link.attr("stroke", d => lineColors[d.line])
                 .attr("stroke-width", 1)
-                .attr("stroke-opacity", 0.8);  // Increased opacity for unselected lines
+                .attr("stroke-opacity", 0.6);
             node.attr("stroke", d => lineColors[d.line])
                 .attr("stroke-width", 2)
-                .attr("fill-opacity", 0.8)
-                .attr("stroke-opacity", 0.8);
+                .attr("fill", "white");
 
             // Highlight the selected station
             node.filter(n => n.id === selectedStation)
                 .attr("stroke", "black")
                 .attr("stroke-width", 3)
-                .attr("fill-opacity", 1)
-                .attr("stroke-opacity", 1);
+                .attr("fill", "red");
 
             // Highlight the journey
             reachableStations.forEach(path => {
@@ -541,21 +626,53 @@
                     const target = path[i + 1];
                     link.filter(l => (l.source.id === source && l.target.id === target) || 
                                      (l.source.id === target && l.target.id === source))
-                        .attr("stroke-width", 3)
-                        .attr("stroke-opacity", 1);  // Full opacity for selected routes
+                        .attr("stroke-width", 4)
+                        .attr("stroke-opacity", 1);
                 }
                 node.filter(n => path.includes(n.id))
                     .attr("stroke-width", 3)
-                    .attr("fill-opacity", 1)
-                    .attr("stroke-opacity", 1);
+                    .attr("fill", "yellow");
             });
 
             // Display journey information
             const journeyInfo = document.getElementById("journey-info");
             journeyInfo.innerHTML = `<h3>Possible Journeys from ${selectedStation} (up to ${numStops} stops):</h3>`;
             reachableStations.forEach(path => {
-                journeyInfo.innerHTML += `<p>${path.join(" → ")}</p>`;
+                const changes = countLineChanges(path);
+                journeyInfo.innerHTML += `<p>${path.join(" → ")} (${path.length - 1} stops, ${changes} line change${changes !== 1 ? 's' : ''})</p>`;
             });
+        }
+
+        function countLineChanges(path) {
+            let changes = 0;
+            let currentLine = null;
+
+            for (let i = 0; i < path.length - 1; i++) {
+                const station1 = path[i];
+                const station2 = path[i + 1];
+                const line = findLineBetweenStations(station1, station2);
+
+                if (line !== currentLine) {
+                    if (currentLine !== null) {
+                        changes++;
+                    }
+                    currentLine = line;
+                }
+            }
+
+            return changes;
+        }
+
+        function findLineBetweenStations(station1, station2) {
+            for (const [line, stations] of Object.entries(undergroundNetwork)) {
+                if (stations[station1] && stations[station1].includes(station2)) {
+                    return line;
+                }
+                if (stations[station2] && stations[station2].includes(station1)) {
+                    return line;
+                }
+            }
+            return null;
         }
 
         // Node selection and auto-calculate
@@ -569,56 +686,6 @@
 
         // Initial instructions
         document.getElementById("journey-info").innerHTML = "Click on a station to start planning your journey.";
-
-        d3.json("src/data/nodes.json").then(function(graph) {
-            // Ensure "graph" contains the nodes and links
-            console.log(graph);
-
-            // ... rest of your code
-        });
-
-        function initializeSimulation(graph) {
-            var simulation = d3.forceSimulation(graph.nodes)
-                .force("link", d3.forceLink(graph.links).id(function(d) { return d.id; }))
-                .force("charge", d3.forceManyBody())
-                .force("center", d3.forceCenter(width / 2, height / 2));
-
-            // ... rest of your simulation code
-        }
-
-        function highlightNode(nodeId) {
-            var node = d3.selectAll(".node")
-                .filter(d => d.id === nodeId);
-
-            if (node.empty()) {
-                console.error("Node not found: " + nodeId);
-                return;
-            }
-
-            node.attr("fill", "red")
-                .attr("r", 6);
-        }
-
-        // Example usage (move this to after the simulation has started)
-        setTimeout(() => {
-            highlightNode("Warwick Avenue");
-        }, 1000);
-
-        function getNodeById(nodeId) {
-            var node = graph.nodes.find(function(n) { return n.id === nodeId; });
-
-            if (!node) {
-                throw new Error("Node not found: " + nodeId);
-            }
-
-            return node;
-        }
-
-        try {
-            // Your code that might throw an error
-        } catch (error) {
-            console.error(error);
-        }
 
     });
     </script>
